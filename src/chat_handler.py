@@ -47,15 +47,18 @@ def _parse_body(event: Dict[str, Any]) -> Dict[str, Any]:
 def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
     method = (event.get("requestContext", {}).get("http", {}).get("method") or event.get("httpMethod") or "").upper()
 
+    headers = event.get("headers") or {}
+    request_origin = headers.get("origin") or headers.get("Origin")
+
     if method == "OPTIONS":
-        return http.no_content()
+        return http.no_content(request_origin)
 
     path = _normalize_path(event)
     logger.info("Incoming request: %s %s", method, path)
 
     user_id = extract_user_id(event)
     if not user_id:
-        return http.unauthorized("Missing authenticated user")
+        return http.unauthorized("Missing authenticated user", request_origin)
 
     service = get_chat_service()
 
@@ -67,11 +70,12 @@ def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
             session_id = body.get("session_id")
 
             if not message:
-                return http.bad_request("El mensaje no puede estar vacío", "EMPTY_MESSAGE")
+                return http.bad_request("El mensaje no puede estar vacío", "EMPTY_MESSAGE", request_origin)
             if not learning_path_id:
                 return http.bad_request(
                     "Debes seleccionar una ruta de aprendizaje antes de usar el chat.",
                     "NO_LEARNING_PATH",
+                    request_origin,
                 )
 
             payload = service.send_message(
@@ -80,14 +84,16 @@ def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
                 message=message,
                 session_id=session_id,
             )
-            return http.response(200, payload)
+            return http.response(200, payload, request_origin=request_origin)
 
         if method == "GET" and path.startswith("chat/history/"):
             session_id = path.split("/", maxsplit=2)[-1]
             if not session_id:
-                return http.bad_request("session_id es requerido", "MISSING_SESSION_ID")
+                return http.bad_request("session_id es requerido", "MISSING_SESSION_ID", request_origin)
             history = service.get_history(user_id=user_id, session_id=session_id)
-            return http.response(200, {"session_id": session_id, "messages": history})
+            return http.response(
+                200, {"session_id": session_id, "messages": history}, request_origin=request_origin
+            )
 
         if method == "GET" and path == "chat/sessions":
             query = event.get("queryStringParameters") or {}
@@ -95,30 +101,31 @@ def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
             sessions = service.list_sessions(
                 user_id=user_id, learning_path_id=learning_path_id
             )
-            return http.response(200, {"sessions": sessions})
+            return http.response(200, {"sessions": sessions}, request_origin=request_origin)
 
         if method == "DELETE" and path.startswith("chat/session/"):
             session_id = path.split("/", maxsplit=2)[-1]
             if not session_id:
-                return http.bad_request("session_id es requerido", "MISSING_SESSION_ID")
+                return http.bad_request("session_id es requerido", "MISSING_SESSION_ID", request_origin)
             service.delete_session(user_id=user_id, session_id=session_id)
-            return http.no_content()
+            return http.no_content(request_origin)
 
-        return http.not_found("Ruta no disponible", "ROUTE_NOT_FOUND")
+        return http.not_found("Ruta no disponible", "ROUTE_NOT_FOUND", request_origin)
 
     except LearningPathNotFound:
         return http.bad_request(
             "No encontramos la ruta de aprendizaje seleccionada.",
             "UNKNOWN_LEARNING_PATH",
+            request_origin,
         )
     except SessionNotFound:
-        return http.not_found("La sesión indicada no existe.", "SESSION_NOT_FOUND")
+        return http.not_found("La sesión indicada no existe.", "SESSION_NOT_FOUND", request_origin)
     except PermissionError as exc:
         logger.warning("Permission error: %s", exc)
-        return http.unauthorized(str(exc))
+        return http.unauthorized(str(exc), request_origin)
     except ValueError as exc:
         logger.warning("Bad request: %s", exc)
-        return http.bad_request(str(exc))
+        return http.bad_request(str(exc), request_origin=request_origin)
     except Exception as exc:  # noqa: BLE001
         logger.exception("Unexpected error processing chat request")
-        return http.internal_error()
+        return http.internal_error(request_origin=request_origin)
