@@ -114,7 +114,7 @@ Resources:
               Action:
                 - bedrock:InvokeModel
               Resource:
-                - arn:aws:bedrock:us-east-1::foundation-model/us.amazon.nova-pro-v1:0
+                - !Sub 'arn:aws:bedrock:us-east-1:${AWS::AccountId}:inference-profile/us.amazon.nova-pro-v1:0'
             - Effect: Allow
               Action:
                 - cloudwatch:PutMetricData
