@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Optional
 
 
@@ -21,4 +22,16 @@ def extract_user_id(event: Dict[str, Any]) -> Optional[str]:
     for key in ("x-user-id", "user-id", "X-User-Id", "User-Id"):
         if headers.get(key):
             return headers[key]
+
+    body = event.get("body")
+    if body:
+        try:
+            if isinstance(body, str):
+                body = json.loads(body)
+            if isinstance(body, dict):
+                user_id = body.get("user_id") or body.get("userId")
+                if user_id:
+                    return user_id
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return None
     return None
