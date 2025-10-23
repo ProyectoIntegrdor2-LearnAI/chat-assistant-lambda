@@ -159,7 +159,7 @@ Resources:
     Properties:
       LayerName: !Sub learnia-rds-ca-chat-${Environment}
       Description: RDS CA bundle for SSL connections
-      ContentUri: layer-certs/
+      ContentUri: layer-certs/certs/
       CompatibleRuntimes:
         - python3.12
 
