@@ -27,7 +27,7 @@ class BedrockClient:
             max_pool_connections=15,
         )
 
-        self._client = boto3.client("bedrock-runtime", config=config)
+        self._client = boto3.client("bedrock-runtime", region_name=region, config=config)
 
     @retry(
         wait=wait_exponential(multiplier=1, min=1, max=8),
