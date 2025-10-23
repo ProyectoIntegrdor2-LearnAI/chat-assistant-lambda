@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from ..clients.postgres_client import get_postgres_client, PostgresClient
-from ..clients.mongodb_client import get_mongo_client, MongoCourseClient
+from clients.postgres_client import get_postgres_client, PostgresClient
+from clients.mongodb_client import get_mongo_client, MongoCourseClient
 
 
 class LearningPathNotFound(Exception):

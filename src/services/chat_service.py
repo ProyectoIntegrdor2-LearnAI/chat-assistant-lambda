@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from ..clients.bedrock_client import BedrockClient
-from ..clients.dynamodb_client import ChatHistoryRepository
-from ..services.context_builder import (
+from clients.bedrock_client import BedrockClient
+from clients.dynamodb_client import ChatHistoryRepository
+from services.context_builder import (
     LearningPathContextBuilder,
     LearningPathNotFound,
 )
@@ -36,7 +36,7 @@ class ChatService:
         learning_path_id: str,
         message: str,
         session_id: Optional[str] = None,
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         if not message or not message.strip():
             raise ValueError("Message cannot be empty")
 
@@ -70,13 +70,21 @@ class ChatService:
             )
         conversation.append({"role": "user", "content": message})
 
-        logger.info(
-            "Invoking Bedrock for session %s (user %s, lp %s)",
-            session_id,
-            user_id,
-            learning_path_id,
-        )
-        ai_response = self._bedrock.invoke(system_prompt, conversation)
+        ai_response: str
+        try:
+            logger.info(
+                "Invoking Bedrock for session %s (user %s, lp %s)",
+                session_id,
+                user_id,
+                learning_path_id,
+            )
+            ai_response = self._bedrock.invoke(system_prompt, conversation)
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Bedrock invocation failed: %s", exc)
+            ai_response = (
+                "Por el momento no puedo consultar tu tutor inteligente. "
+                "Sigue avanzando con tu ruta y vuelve a intentarlo en unos minutos."
+            )
 
         # Persist messages
         self._history_repo.append_message(
@@ -105,7 +113,7 @@ class ChatService:
             },
         }
 
-    def get_history(self, *, user_id: str, session_id: str) -> List[Dict[str, any]]:
+    def get_history(self, *, user_id: str, session_id: str) -> List[Dict[str, Any]]:
         owner = self._history_repo.get_session_owner(session_id)
         if owner and owner != user_id:
             raise PermissionError("Session does not belong to the user")
@@ -121,7 +129,7 @@ class ChatService:
 
     def list_sessions(
         self, *, user_id: str, learning_path_id: Optional[str] = None
-    ) -> List[Dict[str, any]]:
+    ) -> List[Dict[str, Any]]:
         sessions = self._history_repo.list_sessions(user_id, learning_path_id)
         return sessions
 
