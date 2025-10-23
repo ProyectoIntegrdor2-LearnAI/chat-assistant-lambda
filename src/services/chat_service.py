@@ -3,9 +3,9 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from clients.bedrock_client import BedrockClient
-from clients.dynamodb_client import ChatHistoryRepository
-from services.context_builder import (
+from ..clients.bedrock_client import BedrockClient
+from ..clients.dynamodb_client import ChatHistoryRepository
+from .context_builder import (
     LearningPathContextBuilder,
     LearningPathNotFound,
 )

@@ -3,9 +3,9 @@ import json
 import logging
 from typing import Any, Dict, Optional
 
-from services.chat_service import ChatService, LearningPathNotFound, SessionNotFound
-from utils import http
-from utils.auth import extract_user_id
+from .services.chat_service import ChatService, LearningPathNotFound, SessionNotFound
+from .utils import http
+from .utils.auth import extract_user_id
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
