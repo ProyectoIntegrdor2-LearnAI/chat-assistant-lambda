@@ -1,0 +1,65 @@
+name: Deploy Chat Assistant Lambda
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'chat-assistant-lambda/**'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::974724840334:role/gh-actions-deploy-role
+          aws-region: us-east-2
+
+      - name: SAM Build
+        working-directory: chat-assistant-lambda
+        run: sam build --use-container
+
+      - name: SAM Deploy
+        working-directory: chat-assistant-lambda
+        run: |
+          sam deploy \
+            --template-file .aws-sam/build/template.yaml \
+            --stack-name learnia-chat-assistant-dev \
+            --region us-east-2 \
+            --s3-bucket learnia-sam-artifacts-us-east-2 \
+            --capabilities CAPABILITY_IAM \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              Environment=dev \
+              AtlasUri="${{ secrets.ATLAS_URI_DEV }}" \
+              PostgresHost="${{ secrets.POSTGRES_HOST }}" \
+              PostgresPassword="${{ secrets.POSTGRES_PASSWORD }}" \
+              CorsAllowOrigin="https://www.learn-ia.app"
+
+      - name: Show outputs
+        run: |
+          aws cloudformation describe-stacks \
+            --stack-name learnia-chat-assistant-dev \
+            --region us-east-2 \
+            --query 'Stacks[0].Outputs' \
+            --output table
