@@ -1,13 +1,41 @@
 import json
 import os
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
-CORS_ALLOW_ORIGIN = os.getenv("CORS_ALLOW_ORIGIN", "https://www.learn-ia.app")
-CORS_HEADERS = {
-    "Access-Control-Allow-Origin": CORS_ALLOW_ORIGIN,
-    "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,Authorization,X-User-Id",
-}
+RAW_CORS_ORIGIN = os.getenv("CORS_ALLOW_ORIGIN", "https://www.learn-ia.app")
+
+
+def _normalize_origin(origin: Optional[str]) -> str:
+    if not origin:
+        return "*"
+    origin = origin.strip()
+    if origin == "*":
+        return "*"
+
+    parsed = urlparse(origin if "://" in origin else f"https://{origin.lstrip('/')}")
+    host = parsed.hostname or ""
+    scheme = parsed.scheme or "https"
+    port = f":{parsed.port}" if parsed.port else ""
+    normalized = f"{scheme.lower()}://{host.lower()}{port}"
+    return normalized.rstrip("/")
+
+
+def _build_cors_headers() -> Dict[str, str]:
+    allow_origin = _normalize_origin(RAW_CORS_ORIGIN)
+    headers = {
+        "Access-Control-Allow-Origin": allow_origin,
+        "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization,X-User-Id",
+        "Access-Control-Allow-Credentials": "false",
+    }
+    if allow_origin != "*":
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Vary"] = "Origin"
+    return headers
+
+
+CORS_HEADERS = _build_cors_headers()
 
 
 def response(
