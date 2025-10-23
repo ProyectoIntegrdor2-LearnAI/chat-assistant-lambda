@@ -3,8 +3,6 @@ name: Deploy Chat Assistant Lambda
 on:
   push:
     branches: [main]
-    paths:
-      - 'chat-assistant-lambda/**'
   workflow_dispatch:
 
 permissions:
@@ -36,11 +34,11 @@ jobs:
           aws-region: us-east-2
 
       - name: SAM Build
-        working-directory: chat-assistant-lambda
+        working-directory: .
         run: sam build --use-container
 
       - name: SAM Deploy
-        working-directory: chat-assistant-lambda
+        working-directory: .
         run: |
           sam deploy \
             --template-file .aws-sam/build/template.yaml \
