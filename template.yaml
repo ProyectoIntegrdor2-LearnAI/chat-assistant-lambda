@@ -74,8 +74,8 @@ Resources:
       Runtime: python3.12
       Handler: chat_handler.lambda_handler
       CodeUri: src/
-      Timeout: 30
-      MemorySize: 512
+      Timeout: 120
+      MemorySize: 1024
       Layers:
         - !Ref CertificatesLayer
       Environment:

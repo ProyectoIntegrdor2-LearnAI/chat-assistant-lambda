@@ -13,7 +13,7 @@ class LearningPathNotFound(Exception):
 
 @dataclass
 class CourseSummary:
-    course_id: str
+    course_id: Optional[str]
     title: str
     status: str
     progress_percentage: float
@@ -57,9 +57,7 @@ class LearningPathContextBuilder:
             "overall_progress": rounded_progress,
             "target_hours_per_week": path.get("target_hours_per_week"),
             "target_completion_date": (
-                path.get("target_completion_date").isoformat()
-                if path.get("target_completion_date")
-                else None
+                path.get("target_completion_date").isoformat() if path.get("target_completion_date") is not None else None
             ),
             "current_course": current_course,
             "next_course": next_course,
@@ -122,7 +120,7 @@ class LearningPathContextBuilder:
             platform = None
             url = None
 
-            if self._mongo:
+            if self._mongo and course_id:
                 try:
                     mongo_data = self._mongo.get_course(course_id)
                 except Exception:
