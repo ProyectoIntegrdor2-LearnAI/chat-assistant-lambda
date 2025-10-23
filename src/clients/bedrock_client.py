@@ -11,7 +11,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 class BedrockClient:
     def __init__(self) -> None:
         region = os.getenv("BEDROCK_REGION", "us-west-2")
-        model_id = os.getenv("BEDROCK_MODEL_ID", "us.amazon.nova-pro-v1:0")
+        model_id = os.getenv("BEDROCK_MODEL_ID", "us.amazon.nova-lite-v1:0")
         temperature = float(os.getenv("BEDROCK_TEMPERATURE", "0.7"))
         max_tokens = int(os.getenv("BEDROCK_MAX_TOKENS", "2048"))
 

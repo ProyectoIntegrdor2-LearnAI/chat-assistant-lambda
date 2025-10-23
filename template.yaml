@@ -98,7 +98,7 @@ Resources:
           DB_CA_PATH: /opt/certs/rds-us-east-2-bundle.pem
           # Bedrock
           BEDROCK_REGION: us-west-2
-          BEDROCK_MODEL_ID: us.amazon.nova-pro-v1:0
+          BEDROCK_MODEL_ID: us.amazon.nova-lite-v1:0
           BEDROCK_TEMPERATURE: 0.7
           BEDROCK_MAX_TOKENS: 2048
           CORS_ALLOW_ORIGIN: !Ref CorsAllowOrigin
@@ -115,8 +115,8 @@ Resources:
               Action:
                 - bedrock:InvokeModel
               Resource:
-                - arn:aws:bedrock:us-west-2::foundation-model/amazon.nova-pro-v1:0
-                - !Sub 'arn:aws:bedrock:us-west-2:${AWS::AccountId}:inference-profile/us.amazon.nova-pro-v1:0'
+                - arn:aws:bedrock:us-west-2::foundation-model/amazon.nova-lite-v1:0
+                - !Sub 'arn:aws:bedrock:us-west-2:${AWS::AccountId}:inference-profile/us.amazon.nova-lite-v1:0'
             - Effect: Allow
               Action:
                 - cloudwatch:PutMetricData
