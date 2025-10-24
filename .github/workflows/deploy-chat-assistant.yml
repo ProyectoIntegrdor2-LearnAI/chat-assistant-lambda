@@ -52,6 +52,7 @@ jobs:
               AtlasUri="${{ secrets.ATLAS_URI_DEV }}" \
               PostgresHost="${{ secrets.POSTGRES_HOST }}" \
               PostgresPassword="${{ secrets.POSTGRES_PASSWORD }}" \
+              BedrockModelArn="${{ secrets.BEDROCK_MODEL_ARN }}" \
               CorsAllowOrigin="https://www.learn-ia.app"
 
       - name: Show outputs
