@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from typing import Iterable, List, Dict, Any
 
@@ -6,6 +7,8 @@ import boto3
 from botocore.config import Config
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from botocore.exceptions import BotoCoreError, ClientError
+
+logger = logging.getLogger(__name__)
 
 
 class BedrockClient:
