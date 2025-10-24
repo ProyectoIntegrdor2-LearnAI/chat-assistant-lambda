@@ -39,7 +39,23 @@ jobs:
 
       - name: SAM Deploy
         working-directory: .
+        env:
+          ATLAS_URI_DEV: ${{ secrets.ATLAS_URI_DEV }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          BEDROCK_MODEL_ARN: ${{ secrets.BEDROCK_MODEL_ARN }}
         run: |
+          set -euo pipefail
+
+          PARAM_OVERRIDES="Environment=dev AtlasUri=${ATLAS_URI_DEV} PostgresHost=${POSTGRES_HOST} PostgresPassword=${POSTGRES_PASSWORD} CorsAllowOrigin=https://www.learn-ia.app"
+
+          if [ -n "${BEDROCK_MODEL_ARN:-}" ]; then
+            echo "Using BedrockModelArn override from secret."
+            PARAM_OVERRIDES="${PARAM_OVERRIDES} BedrockModelArn=${BEDROCK_MODEL_ARN}"
+          else
+            echo "Secret BEDROCK_MODEL_ARN not set; using template default."
+          fi
+
           sam deploy \
             --template-file .aws-sam/build/template.yaml \
             --stack-name learnia-chat-assistant-dev \
@@ -47,13 +63,7 @@ jobs:
             --s3-bucket learnia-sam-artifacts-us-east-2 \
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
-            --parameter-overrides \
-              Environment=dev \
-              AtlasUri="${{ secrets.ATLAS_URI_DEV }}" \
-              PostgresHost="${{ secrets.POSTGRES_HOST }}" \
-              PostgresPassword="${{ secrets.POSTGRES_PASSWORD }}" \
-              BedrockModelArn="${{ secrets.BEDROCK_MODEL_ARN }}" \
-              CorsAllowOrigin="https://www.learn-ia.app"
+            --parameter-overrides ${PARAM_OVERRIDES}
 
       - name: Show outputs
         run: |

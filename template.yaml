@@ -25,6 +25,7 @@ Parameters:
   BedrockModelArn:
     Type: String
     Description: ARN del inference profile de Bedrock a utilizar
+    Default: arn:aws:bedrock:us-west-2:974724840334:inference-profile/us.amazon.nova-pro-v1:0
 
 Globals:
   Api:
@@ -119,7 +120,7 @@ Resources:
               Action:
                 - bedrock:InvokeModel
               Resource:
-                - arn:aws:bedrock:us-west-2::foundation-model/us.amazon.nova-lite-v1:0
+                - arn:aws:bedrock:us-west-2::foundation-model/us.amazon.nova-pro-v1:0
                 - !Ref BedrockModelArn
             - Effect: Allow
               Action:
