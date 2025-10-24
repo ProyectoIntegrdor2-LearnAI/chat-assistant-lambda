@@ -38,6 +38,14 @@ class BedrockClient:
             max_pool_connections=15,
         )
 
+        logger.info(
+            "Initializing Bedrock runtime client",
+            extra={
+                "bedrock_region": region,
+                "bedrock_model_id": model_id,
+            },
+        )
+
         self._client = boto3.client("bedrock-runtime", region_name=region, config=config)
 
     @retry(
