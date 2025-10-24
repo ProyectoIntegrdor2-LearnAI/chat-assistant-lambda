@@ -19,6 +19,14 @@ class BedrockClient:
         self._temperature = temperature
         self._max_tokens = max_tokens
 
+        logger.info(
+            "Initializing Bedrock client",
+            extra={
+                "bedrock_region": region,
+                "bedrock_model_id": model_id,
+            },
+        )
+
         config = Config(
             region_name=region,
             retries={"max_attempts": 3, "mode": "standard"},
