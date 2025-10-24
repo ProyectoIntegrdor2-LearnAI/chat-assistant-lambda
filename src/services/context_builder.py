@@ -107,7 +107,7 @@ class LearningPathContextBuilder:
             f"{next_course_text}\n\n"
             "Lista de cursos planificados:\n"
             f"{course_block}\n\n"
-            "Responde en español, en un máximo de tres párrafos (Intenta que las respuestas sean lo más concisas posible), y ofrece recursos o consejos prácticos cuando sea útil."
+            "Responde en español, en un máximo de dos párrafos (Intenta que las respuestas sean lo más concisas posible), y ofrece recursos o consejos prácticos cuando sea útil."
         )
         return prompt
 
