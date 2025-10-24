@@ -22,6 +22,10 @@ Parameters:
     Type: String
     Default: 'https://www.learn-ia.app'
 
+  BedrockModelArn:
+    Type: String
+    Description: ARN del inference profile de Bedrock a utilizar
+
 Globals:
   Api:
     Cors:
@@ -98,7 +102,7 @@ Resources:
           DB_CA_PATH: /opt/certs/rds-us-east-2-bundle.pem
           # Bedrock
           BEDROCK_REGION: us-west-2
-          BEDROCK_MODEL_ID: us.amazon.nova-lite-v1:0
+          BEDROCK_MODEL_ID: !Ref BedrockModelArn
           BEDROCK_TEMPERATURE: 0.7
           BEDROCK_MAX_TOKENS: 2048
           CORS_ALLOW_ORIGIN: !Ref CorsAllowOrigin
@@ -116,6 +120,7 @@ Resources:
                 - bedrock:InvokeModel
               Resource:
                 - arn:aws:bedrock:us-west-2::foundation-model/us.amazon.nova-lite-v1:0
+                - !Ref BedrockModelArn
             - Effect: Allow
               Action:
                 - cloudwatch:PutMetricData

@@ -66,22 +66,34 @@ class BedrockClient:
         Ejecuta una conversación con Bedrock Nova usando un system prompt y el historial.
         conversation: iterable de dicts con keys `role` ('user'|'assistant') y `content`.
         """
-        messages: List[Dict[str, Any]] = [
-            {
-                "role": "system",
-                "content": [{"text": system_prompt}],
-            }
-        ]
+        sanitized_history: List[Dict[str, str]] = []
         for turn in conversation:
-            if not turn.get("content"):
-                continue
-            role = turn.get("role")
+            role = (turn.get("role") or "user").lower()
             if role not in {"user", "assistant"}:
                 continue
+            content = str(turn.get("content") or "")
+            if not content.strip():
+                continue
+            sanitized_history.append({"role": role, "content": content})
+
+        if not sanitized_history:
+            sanitized_history.append({"role": "user", "content": ""})
+
+        first_turn = sanitized_history[0]
+        first_message_text = f"{system_prompt.strip()}\n\n{first_turn['content']}".strip()
+
+        messages: List[Dict[str, Any]] = [
+            {
+                "role": "user",
+                "content": [{"text": first_message_text}],
+            }
+        ]
+
+        for turn in sanitized_history[1:]:
             messages.append(
                 {
-                    "role": role,
-                    "content": [{"text": str(turn["content"])}],
+                    "role": turn["role"],
+                    "content": [{"text": turn["content"]}],
                 }
             )
 
